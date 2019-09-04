@@ -1,4 +1,5 @@
 package TP1;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -7,18 +8,36 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Stack;
 
 public class Server {
 	public static void main(String[] args) throws IOException, ClassNotFoundException {
+
+
+	
+		int portNumber;
+		 //To DO: Entrer le numero du port 
+		 do{
+			System.out.print("Entrer le numero du port entre 5000 et 5050");
+			Scanner scanner =new Scanner(System.in); 
+			portNumber=scanner.nextInt();
+
+	
+		  } while(portNumber>5999 && portNumber<5000); //sortir de la boucle si le numero du port est correct
+		
+
 		while (true) {
 			ServerSocket serverSocket = null;
 			Socket socket = null;
 			ObjectInputStream in = null;
 			ObjectOutputStream out = null;
+			
+			
+			
 			try {
 				// Création du socket du serveur en utilisant le port 5000.
-				serverSocket = new ServerSocket(5003);
+				serverSocket = new ServerSocket(portNumber);
 				// Ici, la fonction accept est bloquante! Ainsi, l'exécution du serveur s'arrête
 				// ici et attend la connection d'un client avant de poursuivre.
 				socket = serverSocket.accept();
