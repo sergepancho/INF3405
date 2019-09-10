@@ -1,69 +1,75 @@
 package TP1;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.net.InetAddress;
 import java.net.Socket;
-import java.util.List;
-import java.util.Scanner;
-import java.util.Stack;
 
-public class Server {
-	public static void main(String[] args) throws IOException, ClassNotFoundException {
+public class Server
+{
+	private static ServerSocket listener;
 
+	public static void main(String[] args) throws Exception
+	{
+		int clientNumber = 0;
+		String serverAddress = "127.0.0.1";
+		int serverPort = 5000;
 
+		//creation de la connexion
+		listener = new ServerSocket();
+		listener.setReuseAddress(true);
+		InetAddress serverIP = InetAddress.getByName(serverAddress);
+
+		//association de l'adresse et du port a la connexion
+		listener.bind(new InetSocketAddress(serverIP, serverPort));
+
+		System.out.format("The server is running on %s:%d%n", serverAddress, serverPort);
+
+		try{
+			while(true)
+			{
+				new ClientHandler(listener.accept(), clientNumber++).start();
+			}
+		}
+		finally
+		{
+			listener.close();
+		}
+	}
+
+	private static class ClientHandler extends Thread{
+		private Socket socket;
+		private int clientNumber;
 	
-		int portNumber;
-		 //To DO: Entrer le numero du port 
-		 do{
-			System.out.print("Entrer le numero du port entre 5000 et 5050");
-			Scanner scanner =new Scanner(System.in); 
-			portNumber=scanner.nextInt();
-
+		public ClientHandler(Socket socket, int clientNumber)
+		{
+			this.socket = socket;
+			this.clientNumber = clientNumber;
+			System.out.println("New connection with client" + clientNumber + " at " + socket);
+		}
 	
-		  } while(portNumber>5999 && portNumber<5000); //sortir de la boucle si le numero du port est correct
-		
+		public void run()
+		{
+			try{
+				DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 
-		while (true) {
-			ServerSocket serverSocket = null;
-			Socket socket = null;
-			ObjectInputStream in = null;
-			ObjectOutputStream out = null;
-			
-			
-			
-			try {
-				// Création du socket du serveur en utilisant le port 5000.
-				serverSocket = new ServerSocket(portNumber);
-				// Ici, la fonction accept est bloquante! Ainsi, l'exécution du serveur s'arrête
-				// ici et attend la connection d'un client avant de poursuivre.
-				socket = serverSocket.accept();
-				// Création d'un input stream. Ce stream contiendra les données envoyées par le
-				// client.
-				in = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
-				// La fonction readObject est bloquante! Ainsi, le serveur arrête son exécution
-				// et attend la réception de l'objet envoyé par le client!
-				List<String> strings = (List<String>) in.readObject();
-				Stack<String> stackOfLines = new Stack<String>();
-				// Remplissage de la stack avec les lignes. La première ligne entrée sera la
-				// dernière à ressortir.
-				for (int i = 0; i < strings.size(); i++) {
-					stackOfLines.push(strings.get(i));
+				out.writeUTF("Hello from server - you are client n" + clientNumber);
+			} catch (IOException e)
+			{
+				System.out.println("Error handling client " + clientNumber + ": " + e);
+			}
+			finally
+			{
+				try
+				{
+					socket.close();
 				}
-				// Création du output stream. Ce stream contiendra les données qui seront
-				// envoyées au client.
-				out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-				// Écriture des données dans la pile.
-				out.writeObject(stackOfLines);
-				// Envoi des données vers le client.
-				out.flush();
-
-			} finally {
-				serverSocket.close();
-				socket.close();
+				catch(IOException e)
+				{
+					System.out.println("Couldn't close a socket");
+				}
+				System.out.println("Connection with client " + clientNumber + " closed");
 			}
 		}
 	}
