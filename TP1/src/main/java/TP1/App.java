@@ -14,11 +14,19 @@ public final class App {
      */
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        System.out.print("Enter a valid IP address (ex: 123.123.12.1): ");
-        String addressIp = scanner.next();
-        System.out.print("Enter a valid port (entre 5000 et 5050):");
+        String addressIp;
+        do{
+            System.out.print("Enter a valid IP address (ex: 123.123.12.1): ");
+            addressIp = scanner.next();
+        }while(false);
+        
+        int port;
+        do{
+            System.out.print("Enter a valid port (entre 5000 et 5050):");
+            port = scanner.nextInt();
+        }while(port < 5050 && port > 5000);
+
         // Scanner scannerAddress = new Scanner(System.in);
-        String port = scanner.next();
         System.out.println("Hello World!");
     }
 }

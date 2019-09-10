@@ -13,8 +13,8 @@ public class Server
 	public static void main(String[] args) throws Exception
 	{
 		int clientNumber = 0;
-		String serverAddress = "127.0.0.1";
-		int serverPort = 5000;
+		String serverAddress = "132.207.29.125";
+		int serverPort = 5003;
 
 		//creation de la connexion
 		listener = new ServerSocket();
