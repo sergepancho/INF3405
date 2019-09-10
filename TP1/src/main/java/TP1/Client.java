@@ -1,4 +1,5 @@
 package TP1;
+/*
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -10,11 +11,30 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
+import java.util.Stack;*/
 
+
+/**fonction pour creer un fichier */
+
+
+/*
+
+void CreateFile(String filename){
+ 
+
+		try{
+			File file=new File(filename+"txt");
+			
+		}
+		catch(exception){
+
+				System.out.print("Le fichier n'a pas ete creer")
+		}
+
+}*/
 /** Le client doit �tre capable de lire un fichier texte et d�envoyer son contenu au serveur qui retransmettra aussit�t son contenu au client. Ce dernier devra intercepter le contenu du fichier texte. Une fois la r�ception termin�e, le serveur devra inverser le contenu du fichier de sorte � ce que la premi�re ligne re�ue soit la derni�re ligne envoy�e vers le client. **/
 
-
+/*
 public class Client {
 
 	public static void main(String[] args) throws UnknownHostException, IOException, ClassNotFoundException {
@@ -81,4 +101,42 @@ public class Client {
 			out.close();
 		}
 	}
+}
+*/
+
+import java.io.DataInputStream;
+import java.net.Socket;
+
+public class Client
+{
+
+	private static Socket socket;
+
+	public static  void main(String[] args) throws Exception
+	{
+		//Adresse et port du serveur 
+		String serverAddress ="127.0.0.1";
+		int port =5000;
+
+		//Creation d'une nouvelle connexio avec le serveuer 
+		socket =new Socket(serverAddress,port);
+		System.out.format("The server is running on %s:%d%n",serverAddress,port);
+
+		//Creation d'un canal entrant pour recevoir  les messages envoyes par le serveur 
+		DataInputStream in = new DataInputStream(socket.getInputStream());
+
+		//Attente de la reception d'un message envoye par le serveur sur l ecanal 
+		String helloMessageFromServer=in.readUTF();
+		System.out.println(helloMessageFromServer);
+		//Fermeture de la connexion avec le serveur 
+		socket.close();
+
+
+
+	}
+
+
+
+
+
 }

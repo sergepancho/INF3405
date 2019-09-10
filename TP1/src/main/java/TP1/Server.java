@@ -17,16 +17,17 @@ public class Server {
 
 	
 		int portNumber;
+		Scanner scanner ;
 		 //To DO: Entrer le numero du port 
 		 do{
-			System.out.print("Entrer le numero du port entre 5000 et 5050");
-			Scanner scanner =new Scanner(System.in); 
+			System.out.print("Entrer le numero du port entre 5000 et 5050 ");
+			scanner =new Scanner(System.in); 
 			portNumber=scanner.nextInt();
 
-	
-		  } while(portNumber>5999 && portNumber<5000); //sortir de la boucle si le numero du port est correct
 		
-
+		  } while(portNumber>5999 || portNumber<5000); //sortir de la boucle si le numero du port est correct
+		  scanner.close();
+	
 		while (true) {
 			ServerSocket serverSocket = null;
 			Socket socket = null;
@@ -68,3 +69,5 @@ public class Server {
 		}
 	}
 }
+
+
