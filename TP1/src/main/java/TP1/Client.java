@@ -11,8 +11,8 @@ public class Client
 	public static  void main(String[] args) throws Exception
 	{
 		//Adresse et port du serveur 
-		String serverAddress ="127.0.0.1";
-		int port =5000;
+		String serverAddress ="132.207.29.125";
+		int port =5003;
 
 		//Creation d'une nouvelle connexio avec le serveuer 
 		socket =new Socket(serverAddress,port);
