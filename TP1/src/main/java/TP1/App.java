@@ -8,6 +8,24 @@ public final class App {
     private App() {
     }
 
+    public static boolean checkAddress(String addressIp) {
+        String[] addressValues = addressIp.split("\\.");
+
+        // We need to get 4 elements exactly
+        if(addressValues.length != 4)
+            return false;
+
+        // values need to be between 0 and 255    
+        for (String a : addressValues){
+            int valueInt = Integer.parseInt(a);
+            if(valueInt > 255 || valueInt < 0){
+                return false;
+            }
+            System.out.println(valueInt);
+        }
+        return true;
+    }
+
     /**
      * Says hello to the world.
      * @param args The arguments of the program.
@@ -18,8 +36,8 @@ public final class App {
         do{
             System.out.print("Enter a valid IP address (ex: 123.123.12.1): ");
             addressIp = scanner.next();
-        }while(false);
-        
+        }while(!checkAddress(addressIp));
+
         int port;
         do{
             System.out.print("Enter a valid port (entre 5000 et 5050):");
