@@ -1,4 +1,5 @@
 package TP1;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -13,7 +14,7 @@ public class Server
 	public static void main(String[] args) throws Exception
 	{
 		int clientNumber = 0;
-		String serverAddress = "132.207.29.125";
+		String serverAddress = "132.207.29.124";
 		int serverPort = 5003;
 
 		//creation de la connexion
@@ -55,6 +56,23 @@ public class Server
 				DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 
 				out.writeUTF("Hello from server - you are client n" + clientNumber);
+
+
+
+
+
+				///////////si le client a envoyer un messages 
+				System.out.println("Execution du message du client" );
+			   DataInputStream in = new DataInputStream(socket.getInputStream());
+
+				//Attente de la reception d'un message envoye par le serveur sur l ecanal 
+				String MessageFromClient=in.readUTF();
+				System.out.println(MessageFromClient);
+
+
+
+
+				/////////////////////////////////
 			} catch (IOException e)
 			{
 				System.out.println("Error handling client " + clientNumber + ": " + e);
