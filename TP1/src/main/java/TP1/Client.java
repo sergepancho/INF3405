@@ -54,7 +54,7 @@ public class Client
 		//Creation d'un canal entrant pour recevoir  les messages envoyes par le serveur 
 		DataInputStream in = new DataInputStream(socket.getInputStream());
 
-		//Attente de la reception d'un message envoye par le serveur sur l ecanal 
+		//Attente de la reception d'un message envoye par le serveur sur le canal 
 		String helloMessageFromServer=in.readUTF();
 		System.out.println(helloMessageFromServer);
 
@@ -116,9 +116,4 @@ public class Client
 
 
 	}
-
-
-
-
-
 }
