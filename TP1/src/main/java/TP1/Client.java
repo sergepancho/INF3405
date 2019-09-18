@@ -11,6 +11,14 @@ public class Client
 
 	private static Socket socket;
 
+	public static String[] decode(String caractere){
+
+         
+		String[] caractereValues = caractere.split(";");
+
+          return caractereValues;
+	    }
+
 	public static boolean checkAddress(String addressIp) {
         String[] addressValues = addressIp.split("\\.");
 
@@ -66,7 +74,7 @@ public class Client
 		//creation d un canal pour envoyer des messages au serveur ....
 		try{
 			while (true){
-				System.out.print("Entrer une commande \n");
+				System.out.print("Entrer une commande:  ");
 			     scanner = new Scanner(System.in);
 				//try{
 				 
@@ -77,7 +85,10 @@ public class Client
 					
 					//while(!in.readUTF().isEmpty()) {
 					helloMessageFromServer=in.readUTF();
-					System.out.println(helloMessageFromServer);
+					String[] table=decode(helloMessageFromServer);
+
+					for(String value: table)
+				 		System.out.println(value);
 				}
 			//	}
 		/*		catch(Exception e) {
