@@ -1,4 +1,5 @@
 package TP1;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -7,6 +8,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.nio.file.Path;
 
 
 public class Server {
@@ -23,9 +25,11 @@ public class Server {
 	// // }
 	// }
 
+
+
 	public static void main(String[] args) throws Exception {
 		int clientNumber = 0;
-		String serverAddress = "132.207.29.118";
+		String serverAddress = "132.207.29.123";
 		int serverPort = 5003;
 
 		// creation de la connexion
@@ -77,6 +81,19 @@ public class Server {
 					}
 					out.writeUTF(response);
 					break;
+
+				case "mkdir":
+					break;
+
+				case "upload":
+					break;
+
+				case "download":
+					break;
+
+				case "exit":
+					break;
+
 				default:
 					break;
 				}
@@ -95,4 +112,27 @@ public class Server {
 			}
 		}
 	}
+
+	// private static Command<Boolean, String> uploadFile(String s) {
+    //     try {
+    //         Path file = currentDir.resolve(s);
+    //         if (file.toFile().exists() && file.toFile().isFile()) {
+    //             FileInputStream fileStream = new FileInputStream(file.toFile());
+    //             long size = file.toFile().length();
+    //             socket.getOut().writeLong(size);
+    //             copyStreamUpload(fileStream, socket.getOut());
+    //             fileStream.close();
+    //         } else {
+    //             socket.getOut().writeLong(0);
+    //             System.out.println("No such file was found!");
+    //         }
+    //     } catch (InvalidPathException e) {
+    //         System.out.println("The file doesn't exist");
+
+    //     } catch (IOException e) {
+    //         e.printStackTrace();
+    //     }
+
+	// 	return t
+	// }
 }

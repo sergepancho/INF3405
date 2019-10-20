@@ -41,13 +41,13 @@ public class Client
 	public static  void main(String[] args) throws Exception
 	{
 		//Adresse et port du serveur 
-		String serverAddress ="132.207.29.118";
+		String serverAddress ="132.207.29.122";
 		int port =5003;
 
 		Scanner scanner = new Scanner(System.in);
         do{
             System.out.print("Enter a valid IP address (ex: 123.123.12.1): ");
-            serverAddress = scanner.next();
+            // serverAddress = scanner.next();
         }while(!checkAddress(serverAddress));
 
         do{
