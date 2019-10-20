@@ -3,6 +3,7 @@ package TP1;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -29,11 +30,7 @@ public class Server {
 
 	public static void main(String[] args) throws Exception {
 		int clientNumber = 0;
-<<<<<<< HEAD
 		String serverAddress = "132.207.29.123";
-=======
-		String serverAddress = "132.207.29.122";
->>>>>>> 27302bd7bc8e13d9e7b37a32d8e1e91c31b81857
 		int serverPort = 5003;
 
 		// creation de la connexion
@@ -74,36 +71,6 @@ public class Server {
 				String commandName;
 				do{	
 				String clientCommand = in.readUTF();
-<<<<<<< HEAD
-
-				switch (clientCommand) {
-				case "ls":
-					File dir = new File(System.getProperty("user.dir"));
-
-					String[] fileNames = dir.list();
-					String response = "";
-					for (String fileName : fileNames) {
-						response += fileName + ";";
-						System.out.println(fileName + "  ");
-					}
-					out.writeUTF(response);
-					break;
-
-				case "mkdir":
-					break;
-
-				case "upload":
-					break;
-
-				case "download":
-					break;
-
-				case "exit":
-					break;
-
-				default:
-					break;
-=======
 				String command[] = clientCommand.split("\\ ");//le premier string est le nom de la commande 
 				commandName = command[0];
 		
@@ -122,9 +89,24 @@ public class Server {
 						}
 						out.writeUTF(response);
 						break;
+
+					case "cd":
+						break;
+
+					case "mkdir":
+						break;
+	
+					case "upload":
+						break;
+	
+					case "download":
+						break;
+	
+					case "exit":
+						break;
+	
 					default:
 						break;
->>>>>>> 27302bd7bc8e13d9e7b37a32d8e1e91c31b81857
 				}
 
 				System.out.println("Command from client " + commandName);
@@ -143,28 +125,26 @@ public class Server {
 				System.out.println("Connection with client " + clientNumber + " closed");
 			}
 		}
-	}
 
-	// private static Command<Boolean, String> uploadFile(String s) {
-    //     try {
-    //         Path file = currentDir.resolve(s);
-    //         if (file.toFile().exists() && file.toFile().isFile()) {
-    //             FileInputStream fileStream = new FileInputStream(file.toFile());
-    //             long size = file.toFile().length();
-    //             socket.getOut().writeLong(size);
-    //             copyStreamUpload(fileStream, socket.getOut());
-    //             fileStream.close();
-    //         } else {
-    //             socket.getOut().writeLong(0);
-    //             System.out.println("No such file was found!");
-    //         }
-    //     } catch (InvalidPathException e) {
-    //         System.out.println("The file doesn't exist");
 
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
+	private static  uploadFile(String s) {
+        try {
+            Path file = currentDir.resolve(s);
+            if (file.toFile().exists() && file.toFile().isFile()) {
+                FileInputStream fileStream = new FileInputStream(file.toFile());
+                long size = file.toFile().length();
+                socket.getOut().writeLong(size);
+                copyStreamUpload(fileStream, socket.getOut());
+                fileStream.close();
+            } else {
+                socket.getOut().writeLong(0);
+                System.out.println("No such file was found!");
+            }
+        } catch (InvalidPathException e) {
+            System.out.println("The file doesn't exist");
 
-	// 	return t
-	// }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+	}	}
 }
