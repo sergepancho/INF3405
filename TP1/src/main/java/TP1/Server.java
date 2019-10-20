@@ -9,24 +9,12 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.nio.file.FileSystems;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-
 
 public class Server {
 	private static ServerSocket listener;
-
-	// public static String[] ls(DataOutputStream out) {
-	// File dir = new File(System.getProperty("user.dir"));
-	// return dir.list();
-	// // int spacing = 0;
-	// // for (String fileName : filesList) {
-	// // out.writeUTF("fileName");
-	// // if (spacing++ % 4 == 0) {
-	// // System.out.println("");
-	// // }
-	// }
-
-
 
 	public static void main(String[] args) throws Exception {
 		int clientNumber = 0;
@@ -55,6 +43,7 @@ public class Server {
 	private static class ClientHandler extends Thread {
 		private Socket socket;
 		private int clientNumber;
+		private Path currentDirectory;
 
 		public ClientHandler(Socket socket, int clientNumber) {
 			this.socket = socket;
@@ -69,18 +58,20 @@ public class Server {
 
 				DataInputStream in = new DataInputStream(socket.getInputStream());
 				String commandName;
-				do{	
-				String clientCommand = in.readUTF();
-				String command[] = clientCommand.split("\\ ");//le premier string est le nom de la commande 
-				commandName = command[0];
-		
-				System.out.println("rien");
-				System.out.println(commandName);
-				
+				do {
+					currentDirectory = FileSystems.getDefault().getPath(System.getProperty("user.dir"));
+					System.out.println(currentDirectory);
+
+					String clientCommand = in.readUTF();
+					String command[] = clientCommand.split("\\ ");// le premier string est le nom de la commande
+					commandName = command[0];
+
+					System.out.println("rien");
+					System.out.println(commandName);
+
 					switch (commandName) {
 					case "ls":
 						File dir = new File(System.getProperty("user.dir"));
-
 						String[] fileNames = dir.list();
 						String response = "";
 						for (String fileName : fileNames) {
@@ -95,24 +86,23 @@ public class Server {
 
 					case "mkdir":
 						break;
-	
+
 					case "upload":
 						break;
-	
+
 					case "download":
 						break;
-	
+
 					case "exit":
 						break;
-	
+
 					default:
 						break;
-				}
+					}
 
-				System.out.println("Command from client " + commandName);
+					System.out.println("Command from client " + commandName);
 
-				}while(commandName != "exit");
-
+				} while (commandName != "exit");
 
 			} catch (IOException e) {
 				System.out.println("Error handling client " + clientNumber + ": " + e);
@@ -126,25 +116,26 @@ public class Server {
 			}
 		}
 
+		// public void uploadFile(String s) {
+		// 	try {
+		// 		Path file = currentDir.resolve(s);
+		// 		if (file.toFile().exists() && file.toFile().isFile()) {
+		// 			FileInputStream fileStream = new FileInputStream(file.toFile());
+		// 			long size = file.toFile().length();
+		// 			socket.getOut().writeLong(size);
+		// 			copyStreamUpload(fileStream, socket.getOut());
+		// 			fileStream.close();
+		// 		} else {
+		// 			socket.getOut().writeLong(0);
+		// 			System.out.println("No such file was found!");
+		// 		}
+		// 	} catch (InvalidPathException e) {
+		// 		System.out.println("The file doesn't exist");
 
-	private static  uploadFile(String s) {
-        try {
-            Path file = currentDir.resolve(s);
-            if (file.toFile().exists() && file.toFile().isFile()) {
-                FileInputStream fileStream = new FileInputStream(file.toFile());
-                long size = file.toFile().length();
-                socket.getOut().writeLong(size);
-                copyStreamUpload(fileStream, socket.getOut());
-                fileStream.close();
-            } else {
-                socket.getOut().writeLong(0);
-                System.out.println("No such file was found!");
-            }
-        } catch (InvalidPathException e) {
-            System.out.println("The file doesn't exist");
+		// 	} catch (IOException e) {
+		// 		e.printStackTrace();
+		// 	}
+		// }
+	}
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-	}	}
 }
