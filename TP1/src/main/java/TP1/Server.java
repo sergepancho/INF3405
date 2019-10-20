@@ -25,7 +25,7 @@ public class Server {
 
 	public static void main(String[] args) throws Exception {
 		int clientNumber = 0;
-		String serverAddress = "132.207.29.118";
+		String serverAddress = "132.207.29.122";
 		int serverPort = 5003;
 
 		// creation de la connexion
@@ -63,25 +63,35 @@ public class Server {
 				out.writeUTF("Hello from server - you are client n" + clientNumber);
 
 				DataInputStream in = new DataInputStream(socket.getInputStream());
+				String commandName;
+				do{	
 				String clientCommand = in.readUTF();
+				String command[] = clientCommand.split("\\ ");//le premier string est le nom de la commande 
+				commandName = command[0];
+		
+				System.out.println("rien");
+				System.out.println(commandName);
+				
+					switch (commandName) {
+					case "ls":
+						File dir = new File(System.getProperty("user.dir"));
 
-				switch (clientCommand) {
-				case "ls":
-					File dir = new File(System.getProperty("user.dir"));
-
-					String[] fileNames = dir.list();
-					String response = "";
-					for (String fileName : fileNames) {
-						response += fileName + ";";
-						System.out.println(fileName + "  ");
-					}
-					out.writeUTF(response);
-					break;
-				default:
-					break;
+						String[] fileNames = dir.list();
+						String response = "";
+						for (String fileName : fileNames) {
+							response += fileName + ";";
+							System.out.println(fileName + "  ");
+						}
+						out.writeUTF(response);
+						break;
+					default:
+						break;
 				}
 
-				System.out.println("Command from client " + clientCommand);
+				System.out.println("Command from client " + commandName);
+
+				}while(commandName != "exit");
+
 
 			} catch (IOException e) {
 				System.out.println("Error handling client " + clientNumber + ": " + e);
