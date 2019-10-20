@@ -9,29 +9,17 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.nio.file.FileSystems;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.Arrays;
-
 
 public class Server {
 	private static ServerSocket listener;
 
-	// public static String[] ls(DataOutputStream out) {
-	// File dir = new File(System.getProperty("user.dir"));
-	// return dir.list();
-	// // int spacing = 0;
-	// // for (String fileName : filesList) {
-	// // out.writeUTF("fileName");
-	// // if (spacing++ % 4 == 0) {
-	// // System.out.println("");
-	// // }
-	// }
-
-
-
 	public static void main(String[] args) throws Exception {
 		int clientNumber = 0;
-		String serverAddress = "132.207.29.122";
+		String serverAddress = "132.207.29.123";
 		int serverPort = 5003;
 
 		// creation de la connexion
@@ -48,8 +36,7 @@ public class Server {
 			while (true) {
 				new ClientHandler(listener.accept(), clientNumber++).start();
 			}
-		} 
-		finally {
+		} finally {
 			listener.close();
 		}
 	}
@@ -57,6 +44,8 @@ public class Server {
 	private static class ClientHandler extends Thread {
 		private Socket socket;
 		private int clientNumber;
+		private Path currentDirectory;
+		private DataOutputStream out;
 
 		public ClientHandler(Socket socket, int clientNumber) {
 			this.socket = socket;
@@ -66,67 +55,69 @@ public class Server {
 
 		public void run() {
 			try {
-				DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+				out = new DataOutputStream(socket.getOutputStream());
 				out.writeUTF("Hello from server - you are client n" + clientNumber);
 
 				DataInputStream in = new DataInputStream(socket.getInputStream());
 				String commandName;
-				do{	
+				do {
 					String clientCommand = in.readUTF();
-					//System.out.println(clientCommand);
-					String command[] = clientCommand.split(" ");//le premier string est le nom de la commande 
+					// System.out.println(clientCommand);
+					String command[] = clientCommand.split(" ");// le premier string est le nom de la commande
 					commandName = command[0];
-			
-				//	System.out.println("rien");
-					//System.out.println(commandName);
-					
-						System.out.println("valeur de la commande"+Arrays.toString(command));
-					
-				
-							switch (commandName) {
-								case "ls":
-									File dir = new File(System.getProperty("user.dir"));
 
-									String[] fileNames = dir.list();
-									String response = "";
-									for (String fileName : fileNames) {
-										response += fileName + ";";
-										System.out.println(fileName + "  ");
-									}
-									out.writeUTF(response);
-									break;
+					// System.out.println("rien");
+					// System.out.println(commandName);
 
-								case "cd":
-								
-									break;
+					System.out.println("valeur de la commande" + Arrays.toString(command));
 
-								case "mkdir":
-								String name =command[1];
-								File directory = new File(name);
-								if(!directory.exists()){ // verifier que le dossier  a ete cree 
-									if(directory.mkdir()){
-										out.writeUTF("Le fichier "+name+"a ;ete creer"); 
-									}
-								}
-									break;
-				
-								case "upload":
-									break;
-				
-								case "download":
-									break;
-				
-								case "exit":
-									break;
-				
-								default:
-									break;
+					switch (commandName) {
+					case "ls":
+						File dir = new File(System.getProperty("user.dir"));
+
+						String[] fileNames = dir.list();
+						String response = "";
+						for (String fileName : fileNames) {
+							response += fileName + ";";
+							System.out.println(fileName + "  ");
+						}
+						out.writeUTF(response);
+						break;
+
+					case "cd":
+						break;
+
+					case "mkdir":
+						String name = command[1];
+						File directory = new File(name);
+						if (!directory.exists()) { // verifier que le dossier a ete cree
+							if (directory.mkdir()) {
+								out.writeUTF("Le fichier " + name + "a ;ete creer");
 							}
+						}
+						break;
 
-						System.out.println("Command from client " + commandName);
+					case "upload":
+						if (test(command[1])) {
+							uploadFile(command[1]);
+						}
+						break;
 
-				}while(commandName != "exit");
+					case "download":
+						break;
 
+					case "exit":
+						break;
+
+					default:
+						break;
+					}
+
+					System.out.println("Command from client " + commandName);
+
+					System.out.println("Command from client " + commandName);
+
+				} while (commandName != "exit");
 
 			} catch (IOException e) {
 				System.out.println("Error handling client " + clientNumber + ": " + e);
@@ -140,18 +131,33 @@ public class Server {
 			}
 		}
 
-
-		/*private static  uploadFile(String s) {
+		public boolean test(String argument) {
+			if (argument.isEmpty()) {
+				return true;
+			}
+			// todo should return an error to the client
 			try {
-				Path file = currentDir.resolve(s);
+
+				out.writeUTF("no filename was provided");
+				System.out.println("no filename was provided");
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return false;
+		}
+
+		public void uploadFile(String s) {
+			try {
+				Path file = currentDirectory.resolve(s);
 				if (file.toFile().exists() && file.toFile().isFile()) {
 					FileInputStream fileStream = new FileInputStream(file.toFile());
 					long size = file.toFile().length();
-					socket.getOut().writeLong(size);
-					copyStreamUpload(fileStream, socket.getOut());
+					out.writeLong(size);
+					// copyStreamUpload(fileStream, out);
 					fileStream.close();
 				} else {
-					socket.getOut().writeLong(0);
+					out.writeLong(0);
 					System.out.println("No such file was found!");
 				}
 			} catch (InvalidPathException e) {
@@ -159,6 +165,8 @@ public class Server {
 
 			} catch (IOException e) {
 				e.printStackTrace();
-			}*/
-	}	//}
+			}
+		}
+	}
+
 }
