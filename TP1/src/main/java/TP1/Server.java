@@ -1,10 +1,15 @@
 package TP1;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.InetAddress;
@@ -152,6 +157,10 @@ public class Server {
 						break;
 
 					case "download":
+						if (test(command[1])) {
+							downloadFile(command[1]);
+						}
+
 						break;
 
 					case "exit":
@@ -160,9 +169,6 @@ public class Server {
 					default:
 						break;
 					}
-
-				
-
 				} while (commandName != "exit");
 
 			} catch (IOException e) {
@@ -178,7 +184,7 @@ public class Server {
 		}
 
 		public boolean test(String argument) {
-			if (argument.isEmpty()) {
+			if (!argument.isEmpty()) {
 				return true;
 			}
 			// todo should return an error to the client
@@ -191,6 +197,21 @@ public class Server {
 				e.printStackTrace();
 			}
 			return false;
+		}
+
+		public void downloadFile(String fileName) {
+			try {
+				File myFile = new File(System.getProperty("user.dir") + "\\" + "test.jpg");
+				byte[] mybytearray = new byte[(int) myFile.length()];
+				BufferedInputStream bis = new BufferedInputStream(new FileInputStream(myFile));
+				bis.read(mybytearray, 0, mybytearray.length);
+				OutputStream os = socket.getOutputStream();
+				os.write(mybytearray, 0, mybytearray.length);
+				os.flush();
+				bis.close();
+			} catch (IOException e) {
+				System.out.println("erreur dans la creation du socket ou de l execution de la commande ");
+			}
 		}
 
 		public void uploadFile(String s) {
