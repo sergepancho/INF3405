@@ -31,11 +31,7 @@ public class Server {
 
 	public static void main(String[] args) throws Exception {
 		int clientNumber = 0;
-<<<<<<< HEAD
 		String serverAddress = "132.207.29.123";
-=======
-		String serverAddress = "132.207.29.122";
->>>>>>> 9040a78e49e25f74cd9191aa7c7cc066e21eb554
 		int serverPort = 5003;
 
 		// creation de la connexion
