@@ -44,6 +44,7 @@ public class Server {
 		private Socket socket;
 		private int clientNumber;
 		private Path currentDirectory;
+		private DataOutputStream out;
 
 		public ClientHandler(Socket socket, int clientNumber) {
 			this.socket = socket;
@@ -53,14 +54,14 @@ public class Server {
 
 		public void run() {
 			try {
-				DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+				out = new DataOutputStream(socket.getOutputStream());
 				out.writeUTF("Hello from server - you are client n" + clientNumber);
 
 				DataInputStream in = new DataInputStream(socket.getInputStream());
 				String commandName;
 				do {
 					currentDirectory = FileSystems.getDefault().getPath(System.getProperty("user.dir"));
-					System.out.println(currentDirectory);
+					System.out.println("this is the directory: " + currentDirectory);
 
 					String clientCommand = in.readUTF();
 					String command[] = clientCommand.split("\\ ");// le premier string est le nom de la commande
@@ -88,6 +89,10 @@ public class Server {
 						break;
 
 					case "upload":
+						if (test(command[1])) {
+							uploadFile(command[1]);
+						}
+						;
 						break;
 
 					case "download":
@@ -116,26 +121,42 @@ public class Server {
 			}
 		}
 
-		// public void uploadFile(String s) {
-		// 	try {
-		// 		Path file = currentDir.resolve(s);
-		// 		if (file.toFile().exists() && file.toFile().isFile()) {
-		// 			FileInputStream fileStream = new FileInputStream(file.toFile());
-		// 			long size = file.toFile().length();
-		// 			socket.getOut().writeLong(size);
-		// 			copyStreamUpload(fileStream, socket.getOut());
-		// 			fileStream.close();
-		// 		} else {
-		// 			socket.getOut().writeLong(0);
-		// 			System.out.println("No such file was found!");
-		// 		}
-		// 	} catch (InvalidPathException e) {
-		// 		System.out.println("The file doesn't exist");
+		public boolean test(String argument) {
+			if (argument.isEmpty()) {
+				return true;
+			}
+			// todo should return an error to the client
+			try {
 
-		// 	} catch (IOException e) {
-		// 		e.printStackTrace();
-		// 	}
-		// }
+				out.writeUTF("no filename was provided");
+				System.out.println("no filename was provided");
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return false;
+		}
+
+		public void uploadFile(String s) {
+			try {
+				Path file = currentDirectory.resolve(s);
+				if (file.toFile().exists() && file.toFile().isFile()) {
+					FileInputStream fileStream = new FileInputStream(file.toFile());
+					long size = file.toFile().length();
+					out.writeLong(size);
+					// copyStreamUpload(fileStream, out);
+					fileStream.close();
+				} else {
+					out.writeLong(0);
+					System.out.println("No such file was found!");
+				}
+			} catch (InvalidPathException e) {
+				System.out.println("The file doesn't exist");
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 }
