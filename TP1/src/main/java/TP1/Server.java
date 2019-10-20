@@ -12,6 +12,7 @@ import java.net.Socket;
 import java.nio.file.FileSystems;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 public class Server {
 	private static ServerSocket listener;
@@ -60,19 +61,20 @@ public class Server {
 				DataInputStream in = new DataInputStream(socket.getInputStream());
 				String commandName;
 				do {
-					currentDirectory = FileSystems.getDefault().getPath(System.getProperty("user.dir"));
-					System.out.println("this is the directory: " + currentDirectory);
-
 					String clientCommand = in.readUTF();
-					String command[] = clientCommand.split("\\ ");// le premier string est le nom de la commande
+					// System.out.println(clientCommand);
+					String command[] = clientCommand.split(" ");// le premier string est le nom de la commande
 					commandName = command[0];
 
-					System.out.println("rien");
-					System.out.println(commandName);
+					// System.out.println("rien");
+					// System.out.println(commandName);
+
+					System.out.println("valeur de la commande" + Arrays.toString(command));
 
 					switch (commandName) {
 					case "ls":
 						File dir = new File(System.getProperty("user.dir"));
+
 						String[] fileNames = dir.list();
 						String response = "";
 						for (String fileName : fileNames) {
@@ -86,13 +88,19 @@ public class Server {
 						break;
 
 					case "mkdir":
+						String name = command[1];
+						File directory = new File(name);
+						if (!directory.exists()) { // verifier que le dossier a ete cree
+							if (directory.mkdir()) {
+								out.writeUTF("Le fichier " + name + "a ;ete creer");
+							}
+						}
 						break;
 
 					case "upload":
 						if (test(command[1])) {
 							uploadFile(command[1]);
 						}
-						;
 						break;
 
 					case "download":
@@ -104,6 +112,8 @@ public class Server {
 					default:
 						break;
 					}
+
+					System.out.println("Command from client " + commandName);
 
 					System.out.println("Command from client " + commandName);
 
