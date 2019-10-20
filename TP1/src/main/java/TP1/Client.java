@@ -1,14 +1,23 @@
 package TP1;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.net.Socket;
+import java.nio.file.InvalidPathException;
 import java.util.Scanner;//  a enlever plus tard 
 
 public class Client {
 
 	private static Socket socket;
+	private static DataInputStream in;
 
 	public static String[] decode(String caractere) {
 
@@ -34,7 +43,31 @@ public class Client {
 		return true;
 	}
 
-	// 132.207.29.124
+	public static void readStream() {
+		try {
+			String messageFromServer = in.readUTF();
+			String[] table = decode(messageFromServer);
+			for (String value : table)
+				System.out.println(value);
+		} catch (IOException e) {
+			System.out.println("erreur dans la creation du socket ou de l execution de la commande ");
+		}
+	}
+
+	public static void download() {
+		try {
+			byte[] mybytearray = new byte[1024];
+			InputStream is = socket.getInputStream();
+			FileOutputStream fos = new FileOutputStream("test.jpg");
+			BufferedOutputStream bos = new BufferedOutputStream(fos);
+			int bytesRead = is.read(mybytearray, 0, mybytearray.length);
+			bos.write(mybytearray, 0, bytesRead);
+			bos.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
 
 	public static void main(String[] args) throws Exception {
 		// Adresse et port du serveur
@@ -57,14 +90,14 @@ public class Client {
 		System.out.format("The server is running on %s:%d%n", serverAddress, port);
 
 		// Creation d'un canal entrant pour recevoir les messages envoyes par le serveur
-		DataInputStream in = new DataInputStream(socket.getInputStream());
+		in = new DataInputStream(socket.getInputStream());
 
 		// Attente de la reception d'un message envoye par le serveur sur le canal
 		String helloMessageFromServer = in.readUTF();
 		System.out.println(helloMessageFromServer);
 
 		// code bidon envoyer un fichier au serveur ;
-		String command = "";
+		String commandLine = "";
 		// creation d un canal pour envoyer des messages au serveur ....
 		try {
 			while (true) {
@@ -72,18 +105,38 @@ public class Client {
 				scanner = new Scanner(System.in);
 				// try{
 
-				command = scanner.nextLine();
-				
+				commandLine = scanner.nextLine();
+
 				DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 
-				out.writeUTF(command);
-
+				out.writeUTF(commandLine);
+				String command[] = commandLine.split(" ");
 				// while(!in.readUTF().isEmpty()) {
-				helloMessageFromServer = in.readUTF();
-				String[] table = decode(helloMessageFromServer);
+				switch (command[0]) {
+				case "ls":
+					readStream();
+				case "cd":
+					break;
 
-				for (String value : table)
-					System.out.println(value);
+				case "mkdir":
+					readStream();
+					break;
+
+				case "upload":
+					break;
+
+				case "download":
+					download();
+					break;
+
+				case "exit":
+					readStream();
+					break;
+
+				default:
+					break;
+				}
+
 			}
 			// }
 			/*
@@ -111,6 +164,5 @@ public class Client {
 		/*
 		 * //Fermeture de la connexion avec le serveur socket.close();
 		 */
-
 	}
 }
