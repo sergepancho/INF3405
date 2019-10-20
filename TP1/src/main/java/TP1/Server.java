@@ -19,7 +19,7 @@ public class Server {
 
 	public static void main(String[] args) throws Exception {
 		int clientNumber = 0;
-		String serverAddress = "132.207.29.123";
+		String serverAddress = "132.207.29.122";
 		int serverPort = 5003;
 
 		// creation de la connexion
@@ -45,6 +45,7 @@ public class Server {
 		private Socket socket;
 		private int clientNumber;
 		private Path currentDirectory;
+		private String currentDirectoryString;
 		private DataOutputStream out;
 
 		public ClientHandler(Socket socket, int clientNumber) {
@@ -57,7 +58,10 @@ public class Server {
 			try {
 				out = new DataOutputStream(socket.getOutputStream());
 				out.writeUTF("Hello from server - you are client n" + clientNumber);
-
+				
+				// ajput du repertoire courant 
+				currentDirectoryString =  System.getProperty("user.dir") ;
+                //
 				DataInputStream in = new DataInputStream(socket.getInputStream());
 				String commandName;
 				do {
@@ -70,32 +74,76 @@ public class Server {
 					// System.out.println(commandName);
 
 					System.out.println("valeur de la commande" + Arrays.toString(command));
-
+                   
 					switch (commandName) {
 					case "ls":
-						File dir = new File(System.getProperty("user.dir"));
+						File dir = new File(currentDirectoryString);
 
 						String[] fileNames = dir.list();
 						String response = "";
 						for (String fileName : fileNames) {
 							response += fileName + ";";
-							System.out.println(fileName + "  ");
+							//System.out.println(fileName + "  ");
 						}
 						out.writeUTF(response);
 						break;
 
 					case "cd":
+
+					   String directoryName = command[1];
+					   String slash = "..";
+					  // if(directoryName == slash){//si le repertoire de deplacement est le repertoire parent
+						if(directoryName.compareTo(slash) == 0){//si le repertoire de deplacement est le repertoire parent
+							File dircourant = new File(currentDirectoryString);
+							File  dirParent = dircourant.getParentFile();// le  dossier parent
+							if(dirParent.exists()){
+								currentDirectoryString = dirParent.getAbsolutePath();
+							}		
+					   }else{ // si le repertoire de deplacement est le repertoire enfant 
+						
+							File dircourant = new File(currentDirectoryString);
+							//verifier si le fichier existe dans la  liste des fichiers 
+
+								
+
+							String[] FileNames = dircourant.list();
+							boolean filefound = false;
+							for (String fileName : FileNames) { 
+								//System.out.println("les fichiers dans le repertoire courant sont "+fileName +" " +directoryName);
+								if(fileName .compareTo(directoryName)== 0){ // si les deux strings se correspondent
+									filefound = true;           
+									break;
+								}           
+							}
+
+								//creer un dossier a partir du fichiers choisi 
+								//ouvrir le repertoire 
+
+							if(filefound == true){ // si le fichier a ete trouve 		
+								//String path =  System.getProperty("user.dir")+"/"+ directoryName ;
+								//currentDirectoryString = dircourant.getAbsolutePath() + '\\' + directoryName ;
+								currentDirectoryString += '\\' + directoryName ; 
+								out.writeUTF("vous etes actuellement dans le chemin"+currentDirectoryString);
+							//	System.out.println("les fichiers dans le repertoire courant sont "+currentDirectoryString);
+							}
+							else{
+							//	System.out.print("le nom du fichier entre ne figure pas dans  le repertoire courant");
+								out.writeUTF("le fichier de reference n'existe pas");
+							}
+
+					   }
 						break;
 
 					case "mkdir":
-						String name = command[1];
-						File directory = new File(name);
+						String path = currentDirectoryString + "\\"+ command[1];
+						File directory = new File(path);
 						if (!directory.exists()) { // verifier que le dossier a ete cree
 							if (directory.mkdir()) {
-								out.writeUTF("Le fichier " + name + "a ;ete creer");
+								out.writeUTF("Le fichier " + path + "a ete creer");
 							}
 						}
 						break;
+						
 
 					case "upload":
 						if (test(command[1])) {
@@ -113,9 +161,7 @@ public class Server {
 						break;
 					}
 
-					System.out.println("Command from client " + commandName);
-
-					System.out.println("Command from client " + commandName);
+				
 
 				} while (commandName != "exit");
 
