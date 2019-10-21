@@ -130,9 +130,6 @@ public final class App {
 
                     File dircourant = new File(currentDirectoryString);
                     //verifier si le fichier existe dans la  liste des fichiers
-
-
-
                     String[] FileNames = dircourant.list();
                     boolean filefound = false;
                     for (String fileName : FileNames) {
@@ -142,7 +139,6 @@ public final class App {
                             break;
                         }
                     }
-
                         //creer un dossier a partir du fichiers choisi
                         //ouvrir le repertoire
 
@@ -152,22 +148,19 @@ public final class App {
                         currentDirectoryString += '\\' + directoryName ;
                         System.out.println("vous etes actuellement dans le chemin"+currentDirectoryString);
                     }
-
                     //	System.out.println("les fichiers dans le repertoire courant sont "+currentDirectoryString);
-
                     else{
                     //	System.out.print("le nom du fichier entre ne figure pas dans  le repertoire courant");
                     System.out.println("le fichier de reference n'existe pas");
                     }
-
                }
                 break;
 
             case "mkdir":
                 String path = currentDirectoryString + "\\"+ command[1];
                 File directory = new File(path);
-                if (!directory.exists()) { // verifier que le dossier a ete cree
-                    if (directory.mkdir()) {
+                if (!directory.exists()) { // verifier que le dossier n'existe pas
+                    if (directory.mkdir()) { // creer le dossier
                         System.out.println("Le fichier " + path + "a ete creer");
                     }
                 }

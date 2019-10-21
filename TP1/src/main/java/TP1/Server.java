@@ -1,20 +1,16 @@
 package TP1;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
-import java.net.InetAddress;
 import java.net.Socket;
-import java.nio.file.FileSystems;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -24,7 +20,7 @@ public class Server {
 
 	public static void main(String[] args) throws Exception {
 		int clientNumber = 0;
-		String serverAddress = "132.207.29.122";
+		String serverAddress = "192.168.0.159";
 		int serverPort = 5003;
 
 		// creation de la connexion
@@ -63,8 +59,8 @@ public class Server {
 			try {
 				out = new DataOutputStream(socket.getOutputStream());
 				out.writeUTF("Hello from server - you are client n" + clientNumber);
-				
-				// ajput du repertoire courant 
+
+				// ajout du repertoire courant
 				currentDirectoryString =  System.getProperty("user.dir") ;
                 //
 				DataInputStream in = new DataInputStream(socket.getInputStream());
@@ -79,64 +75,65 @@ public class Server {
 					// System.out.println(commandName);
 
 					System.out.println("valeur de la commande" + Arrays.toString(command));
-                   
+                    String response = "";
 					switch (commandName) {
 					case "ls":
 						File dir = new File(currentDirectoryString);
 
 						String[] fileNames = dir.list();
-						String response = "";
+						response = "";
 						for (String fileName : fileNames) {
 							response += fileName + ";";
 							//System.out.println(fileName + "  ");
 						}
-						out.writeUTF(response);
+                        out.writeUTF(response);
+                        out.flush();
 						break;
 
 					case "cd":
-
+                     /*   if(command[1] == null){
+                      // if(test(command[1]) == false){
+                           break;//sortir du case cd
+                       }*/
 					   String directoryName = command[1];
-					   String slash = "..";
-					  // if(directoryName == slash){//si le repertoire de deplacement est le repertoire parent
-						if(directoryName.compareTo(slash) == 0){//si le repertoire de deplacement est le repertoire parent
+						if(directoryName.compareTo("..") == 0){//si le repertoire de deplacement est le repertoire parent
 							File dircourant = new File(currentDirectoryString);
 							File  dirParent = dircourant.getParentFile();// le  dossier parent
 							if(dirParent.exists()){
 								currentDirectoryString = dirParent.getAbsolutePath();
-							}		
-					   }else{ // si le repertoire de deplacement est le repertoire enfant 
-						
+							}
+					   }else{ // si le repertoire de deplacement est le repertoire enfant
 							File dircourant = new File(currentDirectoryString);
-							//verifier si le fichier existe dans la  liste des fichiers 
-
-								
-
+							//verifier si le fichier existe dans la  liste des fichiers
 							String[] FileNames = dircourant.list();
 							boolean filefound = false;
-							for (String fileName : FileNames) { 
-								//System.out.println("les fichiers dans le repertoire courant sont "+fileName +" " +directoryName);
-								if(fileName .compareTo(directoryName)== 0){ // si les deux strings se correspondent
-									filefound = true;           
+							for (String fileName : FileNames) {
+
+								if(fileName .compareTo(directoryName) == 0){ // si les deux strings se correspondent
+									filefound = true;
 									break;
-								}           
+								}
 							}
 
-								//creer un dossier a partir du fichiers choisi 
-								//ouvrir le repertoire 
 
-							if(filefound == true){ // si le fichier a ete trouve 		
-								//String path =  System.getProperty("user.dir")+"/"+ directoryName ;
-								//currentDirectoryString = dircourant.getAbsolutePath() + '\\' + directoryName ;
-								currentDirectoryString += '\\' + directoryName ; 
-								out.writeUTF("vous etes actuellement dans le chemin"+currentDirectoryString);
-							//	System.out.println("les fichiers dans le repertoire courant sont "+currentDirectoryString);
+							if(filefound == true){ // si le fichier a ete trouve
+
+								currentDirectoryString += '\\' + directoryName ;
+                                response="vous etes actuellement dans le chemin;"+currentDirectoryString;
+
+                                // out.writeUTF(response);
+                                 //out.flush();
 							}
 							else{
-							//	System.out.print("le nom du fichier entre ne figure pas dans  le repertoire courant");
-								out.writeUTF("le fichier de reference n'existe pas");
+                            	System.out.print("le nom du fichier entre ne figure pas dans  le repertoire courant");
+                                response = "le fichier de reference n'existe pas ;" ;
+                               // out.writeUTF(response);
+                                //out.flush();
+                               // break;
 							}
 
-					   }
+                       }
+                       System.out.println("vous etes actuellement dans le chemin;"+currentDirectoryString);
 						break;
 
 					case "mkdir":
@@ -144,11 +141,12 @@ public class Server {
 						File directory = new File(path);
 						if (!directory.exists()) { // verifier que le dossier a ete cree
 							if (directory.mkdir()) {
-								out.writeUTF("Le fichier " + path + "a ete creer");
+                                out.writeUTF("Le fichier " + path + "a ete creer;");
+                                out.flush();
 							}
 						}
 						break;
-						
+
 
 					case "upload":
 						if (test(command[1])) {
@@ -163,13 +161,15 @@ public class Server {
 
 						break;
 
-					case "exit":
+                    case "exit":
+                        out.writeUTF("Vous avez ete deconnecte");
+                        out.flush();
 						break;
 
 					default:
 						break;
 					}
-				} while (commandName != "exit");
+				} while (commandName.compareTo("exit") != 0);
 
 			} catch (IOException e) {
 				System.out.println("Error handling client " + clientNumber + ": " + e);

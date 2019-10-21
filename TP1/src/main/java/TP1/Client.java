@@ -1,18 +1,11 @@
 package TP1;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.Socket;
-import java.nio.file.InvalidPathException;
-import java.util.Scanner;//  a enlever plus tard 
 
 public class Client {
 
@@ -71,10 +64,10 @@ public class Client {
 
 	public static void main(String[] args) throws Exception {
 		// Adresse et port du serveur
-		String serverAddress = "132.207.29.122";
+		String serverAddress = "192.168.0.159";//"132.207.29.122";
 		int port = 5003;
 
-		Scanner scanner = new Scanner(System.in);
+		//Scanner scanner = new Scanner(System.in);
 		do {
 			System.out.print("Enter a valid IP address (ex: 123.123.12.1): ");
 			// serverAddress = scanner.next();
@@ -141,9 +134,9 @@ public class Client {
 			// }
 			/*
 			 * catch(Exception e) {
-			 * 
+			 *
 			 * System.out.print("Entrer une commande parmi les suivantes");
-			 * 
+			 *
 			 * System.out.print("Entrer une commande"); }
 			 */
 
