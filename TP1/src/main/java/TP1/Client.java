@@ -2,10 +2,12 @@ package TP1;
 
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
+import java.util.Scanner;
 
 public class Client {
 
@@ -49,12 +51,22 @@ public class Client {
 
 	public static void download() {
 		try {
-			byte[] mybytearray = new byte[1024];
+			int fileSize;
+			fileSize = in.readInt();
+			System.out.print("size: " + fileSize);
+			byte[] mybytearray = new byte[209982];
 			InputStream is = socket.getInputStream();
 			FileOutputStream fos = new FileOutputStream("test.jpg");
 			BufferedOutputStream bos = new BufferedOutputStream(fos);
+
 			int bytesRead = is.read(mybytearray, 0, mybytearray.length);
 			bos.write(mybytearray, 0, bytesRead);
+			System.out.print("finished downloading ");
+
+			// bos.write(mybytearray, 0, current);
+			bos.flush();
+			// System.out.println("File " + "--test--" + " downloaded (" + current + " bytes
+			// read)");
 			bos.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -64,10 +76,10 @@ public class Client {
 
 	public static void main(String[] args) throws Exception {
 		// Adresse et port du serveur
-		String serverAddress = "192.168.0.159";//"132.207.29.122";
+		String serverAddress = "127.0.0.1";// "132.207.29.122";
 		int port = 5003;
 
-		//Scanner scanner = new Scanner(System.in);
+		// Scanner scanner = new Scanner(System.in);
 		do {
 			System.out.print("Enter a valid IP address (ex: 123.123.12.1): ");
 			// serverAddress = scanner.next();
@@ -95,7 +107,7 @@ public class Client {
 		try {
 			while (true) {
 				System.out.print("Entrer une commande:  ");
-				scanner = new Scanner(System.in);
+				Scanner scanner = new Scanner(System.in);
 				// try{
 
 				commandLine = scanner.nextLine();

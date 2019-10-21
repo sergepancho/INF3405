@@ -20,7 +20,7 @@ public class Server {
 
 	public static void main(String[] args) throws Exception {
 		int clientNumber = 0;
-		String serverAddress = "192.168.0.159";
+		String serverAddress = "127.0.0.1";
 		int serverPort = 5003;
 
 		// creation de la connexion
@@ -48,6 +48,9 @@ public class Server {
 		private Path currentDirectory;
 		private String currentDirectoryString;
 		private DataOutputStream out;
+		FileInputStream fis = null;
+		BufferedInputStream bis = null;
+		OutputStream os = null;
 
 		public ClientHandler(Socket socket, int clientNumber) {
 			this.socket = socket;
@@ -61,8 +64,8 @@ public class Server {
 				out.writeUTF("Hello from server - you are client n" + clientNumber);
 
 				// ajout du repertoire courant
-				currentDirectoryString =  System.getProperty("user.dir") ;
-                //
+				currentDirectoryString = System.getProperty("user.dir");
+				//
 				DataInputStream in = new DataInputStream(socket.getInputStream());
 				String commandName;
 				do {
@@ -75,7 +78,7 @@ public class Server {
 					// System.out.println(commandName);
 
 					System.out.println("valeur de la commande" + Arrays.toString(command));
-                    String response = "";
+					String response = "";
 					switch (commandName) {
 					case "ls":
 						File dir = new File(currentDirectoryString);
@@ -84,69 +87,67 @@ public class Server {
 						response = "";
 						for (String fileName : fileNames) {
 							response += fileName + ";";
-							//System.out.println(fileName + "  ");
+							// System.out.println(fileName + " ");
 						}
-                        out.writeUTF(response);
-                        out.flush();
+						out.writeUTF(response);
+						out.flush();
 						break;
 
 					case "cd":
-                     /*   if(command[1] == null){
-                      // if(test(command[1]) == false){
-                           break;//sortir du case cd
-                       }*/
-					   String directoryName = command[1];
-						if(directoryName.compareTo("..") == 0){//si le repertoire de deplacement est le repertoire parent
+						/*
+						 * if(command[1] == null){ // if(test(command[1]) == false){ break;//sortir du
+						 * case cd }
+						 */
+						String directoryName = command[1];
+						if (directoryName.compareTo("..") == 0) {// si le repertoire de deplacement est le repertoire
+																	// parent
 							File dircourant = new File(currentDirectoryString);
-							File  dirParent = dircourant.getParentFile();// le  dossier parent
-							if(dirParent.exists()){
+							File dirParent = dircourant.getParentFile();// le dossier parent
+							if (dirParent.exists()) {
 								currentDirectoryString = dirParent.getAbsolutePath();
 							}
-					   }else{ // si le repertoire de deplacement est le repertoire enfant
+						} else { // si le repertoire de deplacement est le repertoire enfant
 							File dircourant = new File(currentDirectoryString);
-							//verifier si le fichier existe dans la  liste des fichiers
+							// verifier si le fichier existe dans la liste des fichiers
 							String[] FileNames = dircourant.list();
 							boolean filefound = false;
 							for (String fileName : FileNames) {
 
-								if(fileName .compareTo(directoryName) == 0){ // si les deux strings se correspondent
+								if (fileName.compareTo(directoryName) == 0) { // si les deux strings se correspondent
 									filefound = true;
 									break;
 								}
 							}
 
+							if (filefound == true) { // si le fichier a ete trouve
 
-							if(filefound == true){ // si le fichier a ete trouve
+								currentDirectoryString += '\\' + directoryName;
+								response = "vous etes actuellement dans le chemin;" + currentDirectoryString;
 
-								currentDirectoryString += '\\' + directoryName ;
-                                response="vous etes actuellement dans le chemin;"+currentDirectoryString;
-
-                                // out.writeUTF(response);
-                                 //out.flush();
-							}
-							else{
-                            	System.out.print("le nom du fichier entre ne figure pas dans  le repertoire courant");
-                                response = "le fichier de reference n'existe pas ;" ;
-                               // out.writeUTF(response);
-                                //out.flush();
-                               // break;
+								// out.writeUTF(response);
+								// out.flush();
+							} else {
+								System.out.print("le nom du fichier entre ne figure pas dans  le repertoire courant");
+								response = "le fichier de reference n'existe pas ;";
+								// out.writeUTF(response);
+								// out.flush();
+								// break;
 							}
 
-                       }
-                       System.out.println("vous etes actuellement dans le chemin;"+currentDirectoryString);
+						}
+						System.out.println("vous etes actuellement dans le chemin;" + currentDirectoryString);
 						break;
 
 					case "mkdir":
-						String path = currentDirectoryString + "\\"+ command[1];
+						String path = currentDirectoryString + "\\" + command[1];
 						File directory = new File(path);
 						if (!directory.exists()) { // verifier que le dossier a ete cree
 							if (directory.mkdir()) {
-                                out.writeUTF("Le fichier " + path + "a ete creer;");
-                                out.flush();
+								out.writeUTF("Le fichier " + path + "a ete creer;");
+								out.flush();
 							}
 						}
 						break;
-
 
 					case "upload":
 						if (test(command[1])) {
@@ -161,9 +162,9 @@ public class Server {
 
 						break;
 
-                    case "exit":
-                        out.writeUTF("Vous avez ete deconnecte");
-                        out.flush();
+					case "exit":
+						out.writeUTF("Vous avez ete deconnecte");
+						out.flush();
 						break;
 
 					default:
@@ -202,13 +203,28 @@ public class Server {
 		public void downloadFile(String fileName) {
 			try {
 				File myFile = new File(System.getProperty("user.dir") + "\\" + "test.jpg");
+				if (myFile.exists()) {
+					System.out.println("file exists");
+				} else {
+					System.out.println("file doesn't exists");
+				}
+
+				long size = myFile.length();
+
+				long lenght = myFile.length();
 				byte[] mybytearray = new byte[(int) myFile.length()];
+
+				out.writeInt(mybytearray.length);
+				out.flush();
 				BufferedInputStream bis = new BufferedInputStream(new FileInputStream(myFile));
+				fis = new FileInputStream(myFile);
+				bis = new BufferedInputStream(fis);
 				bis.read(mybytearray, 0, mybytearray.length);
-				OutputStream os = socket.getOutputStream();
+				os = socket.getOutputStream();
+				System.out.println("Sending " + "test" + "(" + mybytearray.length + " bytes)");
 				os.write(mybytearray, 0, mybytearray.length);
 				os.flush();
-				bis.close();
+				System.out.println("Done.");
 			} catch (IOException e) {
 				System.out.println("erreur dans la creation du socket ou de l execution de la commande ");
 			}
