@@ -1,5 +1,5 @@
 package TP1;
-import java.util.Scanner; 
+import java.util.Scanner;
 
 
 //
@@ -28,7 +28,7 @@ public final class App {
         if(addressValues.length != 4)
             return false;
 
-        // values need to be between 0 and 255    
+        // values need to be between 0 and 255
         for (String a : addressValues){
             int valueInt = Integer.parseInt(a);
             if(valueInt > 255 || valueInt < 0){
@@ -56,9 +56,9 @@ public final class App {
             System.out.print("Enter a valid port (entre 5000 et 5050):");
             port = scanner.nextInt();
         }while(port < 5050 && port > 5000);*/
-       
 
-        
+
+
       /*  File file = new File("C:\\Directory1");
         if (!file.exists()) {
             if (file.mkdir()) {
@@ -74,28 +74,29 @@ public final class App {
         if (!theDir.exists()) {
             System.out.println("creating directory: " + theDir.getName());
             boolean result = false;
-        
+
             try{
                 System.out.println( theDir.mkdir());
                 result = true;
-            } 
+            }
             catch(SecurityException se){
                 //handle it
-            }        
-            if(result) {    
-                System.out.println("DIR created");  
+            }
+            if(result) {
+                System.out.println("DIR created");
             }
         }
 */
-       
+
 
         //System.out.println(directory.getP)
 
-        //changer le repertoire 
+        //changer le repertoire
         String commandName;
         String currentDirectoryString =  System.getProperty("user.dir") ;
         // Scanner scannerAddrescurrentDirectoryString =  System.getProperty("user.dir") ;s = new Scanner(System.in);
         do {
+            System.out.println("entrer votre commande");
             String clientCommand = scanner.nextLine();
             // System.out.println(clientCommand);
             String command[] = clientCommand.split(" ");// le premier string est le nom de la commande
@@ -110,7 +111,7 @@ public final class App {
                     response += fileName + ";";
                     System.out.println(fileName + "  ");
                 }
-               
+
                 break;
 
             case "cd":
@@ -124,36 +125,36 @@ public final class App {
                     if(dirParent.exists()){
                         currentDirectoryString = dirParent.getAbsolutePath();
                         System.out.println("vous etes actuellement dans le chemin"+currentDirectoryString);
-                    }		
-               }else{ // si le repertoire de deplacement est le repertoire enfant 
-                
-                    File dircourant = new File(currentDirectoryString);
-                    //verifier si le fichier existe dans la  liste des fichiers 
+                    }
+               }else{ // si le repertoire de deplacement est le repertoire enfant
 
-                        
+                    File dircourant = new File(currentDirectoryString);
+                    //verifier si le fichier existe dans la  liste des fichiers
+
+
 
                     String[] FileNames = dircourant.list();
                     boolean filefound = false;
-                    for (String fileName : FileNames) { 
+                    for (String fileName : FileNames) {
                         //System.out.println("les fichiers dans le repertoire courant sont "+fileName +" " +directoryName);
                         if(fileName .compareTo(directoryName)== 0){ // si les deux strings se correspondent
-                            filefound = true;           
+                            filefound = true;
                             break;
-                        }           
+                        }
                     }
 
-                        //creer un dossier a partir du fichiers choisi 
-                        //ouvrir le repertoire 
+                        //creer un dossier a partir du fichiers choisi
+                        //ouvrir le repertoire
 
-                    if(filefound == true){ // si le fichier a ete trouve 		
-                      
-                       // currentDirectoryString = dircourant.getAbsolutePath() + '\\' + directoryName ; 
-                        currentDirectoryString += '\\' + directoryName ; 
+                    if(filefound == true){ // si le fichier a ete trouve
+
+                        //currentDirectoryString = dircourant.getAbsolutePath() + '\\' + directoryName ;
+                        currentDirectoryString += '\\' + directoryName ;
                         System.out.println("vous etes actuellement dans le chemin"+currentDirectoryString);
                     }
-                        
+
                     //	System.out.println("les fichiers dans le repertoire courant sont "+currentDirectoryString);
-                    
+
                     else{
                     //	System.out.print("le nom du fichier entre ne figure pas dans  le repertoire courant");
                     System.out.println("le fichier de reference n'existe pas");
@@ -171,7 +172,7 @@ public final class App {
                     }
                 }
                 break;
-                
+
 
             case "upload":
               //  if (test(command[1])) {
@@ -189,9 +190,9 @@ public final class App {
                 break;
             }
 
-        
 
-        } while (commandName != "exit");
+
+        } while (commandName.compareTo("exit") != 0 );
 
 
     }
