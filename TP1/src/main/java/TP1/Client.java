@@ -21,6 +21,7 @@ public class Client {
 	static FileInputStream fis = null;
 	static BufferedInputStream bis = null;
 	static OutputStream os = null;
+	static Scanner scanner;
 
 	public static String[] decode(String caractere) {
 
@@ -125,11 +126,13 @@ public class Client {
 		String serverAddress = "127.0.0.1";// "132.207.29.122";
 		int port = 5003;
 
-		Scanner scanner = new Scanner(System.in);
+		scanner = new Scanner(System.in);
 		do {
 			System.out.print("Enter a valid IP address (ex: 123.123.12.1): ");
 			serverAddress = scanner.next();
 		} while (!checkAddress(serverAddress));
+
+		scanner = new Scanner(System.in);
 
 		do {
 			System.out.print("Enter a valid port (entre 5000 et 5050):");
@@ -152,9 +155,10 @@ public class Client {
 		String command[];
 		// creation d un canal pour envoyer des messages au serveur ....
 		try {
+
 			do {
 				System.out.print("Entrer une commande:  ");
-
+				scanner = new Scanner(System.in);
 				commandLine = scanner.nextLine();
 				out = new DataOutputStream(socket.getOutputStream());
 
