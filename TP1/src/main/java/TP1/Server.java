@@ -1,11 +1,14 @@
 package TP1;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -14,6 +17,7 @@ import java.net.Socket;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Scanner;
 
 public class Server {
 	private static ServerSocket listener;
@@ -27,6 +31,12 @@ public class Server {
 		listener = new ServerSocket();
 		listener.setReuseAddress(true);
 		InetAddress serverIP = InetAddress.getByName(serverAddress);
+		Scanner scanner = new Scanner(System.in);
+
+		do {
+			System.out.print("Enter a valid port (entre 5000 et 5050):");
+			serverPort = scanner.nextInt();
+		} while (serverPort > 5050 || serverPort < 5000);
 
 		// association de l'adresse et du port a la connexion
 		listener.bind(new InetSocketAddress(serverIP, serverPort));
@@ -39,18 +49,19 @@ public class Server {
 			}
 		} finally {
 			listener.close();
+			scanner.close();
 		}
 	}
 
 	private static class ClientHandler extends Thread {
 		private Socket socket;
 		private int clientNumber;
-		private Path currentDirectory;
 		private String currentDirectoryString;
 		private DataOutputStream out;
 		FileInputStream fis = null;
 		BufferedInputStream bis = null;
 		OutputStream os = null;
+		private DataInputStream in;
 
 		public ClientHandler(Socket socket, int clientNumber) {
 			this.socket = socket;
@@ -66,97 +77,37 @@ public class Server {
 				// ajout du repertoire courant
 				currentDirectoryString = System.getProperty("user.dir");
 				//
-				DataInputStream in = new DataInputStream(socket.getInputStream());
+				in = new DataInputStream(socket.getInputStream());
 				String commandName;
 				do {
 					String clientCommand = in.readUTF();
-					// System.out.println(clientCommand);
 					String command[] = clientCommand.split(" ");// le premier string est le nom de la commande
 					commandName = command[0];
 
-					// System.out.println("rien");
-					// System.out.println(commandName);
-
-					System.out.println("valeur de la commande" + Arrays.toString(command));
-					String response = "";
 					switch (commandName) {
 					case "ls":
-						File dir = new File(currentDirectoryString);
-
-						String[] fileNames = dir.list();
-						response = "";
-						for (String fileName : fileNames) {
-							response += fileName + ";";
-							// System.out.println(fileName + " ");
-						}
-						out.writeUTF(response);
-						out.flush();
+						ls();
 						break;
 
 					case "cd":
-						/*
-						 * if(command[1] == null){ // if(test(command[1]) == false){ break;//sortir du
-						 * case cd }
-						 */
-						String directoryName = command[1];
-						if (directoryName.compareTo("..") == 0) {// si le repertoire de deplacement est le repertoire
-																	// parent
-							File dircourant = new File(currentDirectoryString);
-							File dirParent = dircourant.getParentFile();// le dossier parent
-							if (dirParent.exists()) {
-								currentDirectoryString = dirParent.getAbsolutePath();
-							}
-						} else { // si le repertoire de deplacement est le repertoire enfant
-							File dircourant = new File(currentDirectoryString);
-							// verifier si le fichier existe dans la liste des fichiers
-							String[] FileNames = dircourant.list();
-							boolean filefound = false;
-							for (String fileName : FileNames) {
-
-								if (fileName.compareTo(directoryName) == 0) { // si les deux strings se correspondent
-									filefound = true;
-									break;
-								}
-							}
-
-							if (filefound == true) { // si le fichier a ete trouve
-
-								currentDirectoryString += '\\' + directoryName;
-								response = "vous etes actuellement dans le chemin;" + currentDirectoryString;
-
-								// out.writeUTF(response);
-								// out.flush();
-							} else {
-								System.out.print("le nom du fichier entre ne figure pas dans  le repertoire courant");
-								response = "le fichier de reference n'existe pas ;";
-								// out.writeUTF(response);
-								// out.flush();
-								// break;
-							}
-
+						if (test(command)) {
+							cd(command[1]);
 						}
-						System.out.println("vous etes actuellement dans le chemin;" + currentDirectoryString);
 						break;
-
 					case "mkdir":
-						String path = currentDirectoryString + "\\" + command[1];
-						File directory = new File(path);
-						if (!directory.exists()) { // verifier que le dossier a ete cree
-							if (directory.mkdir()) {
-								out.writeUTF("Le fichier " + path + "a ete creer;");
-								out.flush();
-							}
+						if (test(command)) {
+							mkdir(command[1]);
 						}
 						break;
 
 					case "upload":
-						if (test(command[1])) {
+						if (test(command)) {
 							uploadFile(command[1]);
 						}
 						break;
 
 					case "download":
-						if (test(command[1])) {
+						if (test(command)) {
 							downloadFile(command[1]);
 						}
 
@@ -168,6 +119,8 @@ public class Server {
 						break;
 
 					default:
+						out.writeUTF("La commande entree n'existe pas");
+						out.flush();
 						break;
 					}
 				} while (commandName.compareTo("exit") != 0);
@@ -176,6 +129,8 @@ public class Server {
 				System.out.println("Error handling client " + clientNumber + ": " + e);
 			} finally {
 				try {
+					out.close();
+					in.close();
 					socket.close();
 				} catch (IOException e) {
 					System.out.println("Couldn't close a socket");
@@ -184,39 +139,123 @@ public class Server {
 			}
 		}
 
-		public boolean test(String argument) {
-			if (!argument.isEmpty()) {
+		public boolean test(String[] argument) {
+			if (argument.length > 1) {
 				return true;
 			}
-			// todo should return an error to the client
 			try {
-
 				out.writeUTF("no filename was provided");
 				System.out.println("no filename was provided");
-
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			return false;
 		}
 
-		public void downloadFile(String fileName) {
+		public void ls() {
 			try {
-				File myFile = new File(System.getProperty("user.dir") + "\\" + "test.jpg");
+				File dir = new File(currentDirectoryString);
+
+				String[] fileNames = dir.list();
+				String response = "";
+				for (String fileName : fileNames) {
+					response += fileName + ";";
+					// System.out.println(fileName + " ");
+				}
+				out.writeUTF(response);
+				out.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		// function qui permet de changer de repertoire courant
+		// params: directoryName - recoit le nom du repertoire
+		public void cd(String directoryName) {
+			try {
+				String response = "";
+				if (directoryName.compareTo("..") == 0) {// si le repertoire de deplacement est le repertoire
+															// parent
+					File dircourant = new File(currentDirectoryString);
+					File dirParent = dircourant.getParentFile();// le dossier parent
+					if (dirParent.exists()) {
+						currentDirectoryString = dirParent.getAbsolutePath();
+						response = "vous etes actuellement dans le chemin;" + currentDirectoryString;
+					}
+				} else { // si le repertoire de deplacement est le repertoire enfant
+					File dircourant = new File(currentDirectoryString);
+					// verifier si le fichier existe dans la liste des fichiers
+					String[] FileNames = dircourant.list();
+					boolean filefound = false;
+					for (String fileName : FileNames) {
+
+						if (fileName.compareTo(directoryName) == 0) { // si les deux strings se correspondent
+							filefound = true;
+							break;
+						}
+					}
+
+					if (filefound == true) { // si le fichier a ete trouve
+
+						currentDirectoryString += '\\' + directoryName;
+						response = "vous etes actuellement dans le chemin;" + currentDirectoryString;
+
+					} else {
+						response = "le nom du dossier entre ne figure pas dans  le repertoire courant";
+					}
+
+				}
+				out.writeUTF(response);
+				out.flush();
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		}
+
+		// function qui permet de creer un fichier
+		// params: fileName - recoit le nom du fichier
+		public void mkdir(String fileName) {
+			try {
+				String path = currentDirectoryString + "\\" + fileName;
+				File directory = new File(path);
+				if (!directory.exists()) { // verifier que le dossier a ete cree
+					if (directory.mkdir()) {
+						out.writeUTF("Le fichier " + path + " a ete creer;");
+						out.flush();
+					}
+				}
+				out.writeUTF("Le fichier n'a pas ete creer;");
+				out.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		// function qui permet de download un fichier
+		// params: fileName - recoit le nom du fichier
+		public void downloadFile(String fileName) {
+			System.out.println("filename: " + fileName);
+			try {
+				File myFile = new File(System.getProperty("user.dir") + "\\" + fileName);
 				if (myFile.exists()) {
 					System.out.println("file exists");
+					out.writeInt(1);
+					out.flush();
 				} else {
 					System.out.println("file doesn't exists");
+					out.writeInt(0);
+					out.flush();
+					return;
 				}
 
-				long size = myFile.length();
-
-				long lenght = myFile.length();
 				byte[] mybytearray = new byte[(int) myFile.length()];
 
-				out.writeInt(mybytearray.length);
+				// sending the file size
+				out.writeLong(myFile.length());
 				out.flush();
-				BufferedInputStream bis = new BufferedInputStream(new FileInputStream(myFile));
+
 				fis = new FileInputStream(myFile);
 				bis = new BufferedInputStream(fis);
 				bis.read(mybytearray, 0, mybytearray.length);
@@ -230,21 +269,30 @@ public class Server {
 			}
 		}
 
-		public void uploadFile(String s) {
+		// function qui permet de download un fichier
+		// params: fileName - recoit le nom du fichier
+		public void uploadFile(String filename) {
 			try {
-				Path file = currentDirectory.resolve(s);
-				if (file.toFile().exists() && file.toFile().isFile()) {
-					FileInputStream fileStream = new FileInputStream(file.toFile());
-					long size = file.toFile().length();
-					out.writeLong(size);
-					// copyStreamUpload(fileStream, out);
-					fileStream.close();
-				} else {
-					out.writeLong(0);
-					System.out.println("No such file was found!");
+				int response = in.readInt();
+				if (response == 0) {
+					System.out.println("the file doesn't exist ");
+					return;
 				}
-			} catch (InvalidPathException e) {
-				System.out.println("The file doesn't exist");
+				long fileSize;
+				fileSize = in.readLong();
+				System.out.println("total file size is: " + fileSize);
+				byte[] buffer = new byte[8192];
+				FileOutputStream fos = new FileOutputStream(filename);
+				BufferedOutputStream bos = new BufferedOutputStream(fos);
+				int read = 0;
+				while ((read = in.read(buffer)) > 0) {
+					bos.write(buffer, 0, read);
+				}
+
+				System.out.println("finished downloading");
+
+				bos.flush();
+				bos.close();
 
 			} catch (IOException e) {
 				e.printStackTrace();
