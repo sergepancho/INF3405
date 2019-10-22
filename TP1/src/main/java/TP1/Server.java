@@ -17,6 +17,7 @@ import java.net.Socket;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Scanner;
 
 public class Server {
 	private static ServerSocket listener;
@@ -30,6 +31,12 @@ public class Server {
 		listener = new ServerSocket();
 		listener.setReuseAddress(true);
 		InetAddress serverIP = InetAddress.getByName(serverAddress);
+		Scanner scanner = new Scanner(System.in);
+
+		do {
+			System.out.print("Enter a valid port (entre 5000 et 5050):");
+			serverPort = scanner.nextInt();
+		} while (serverPort > 5050 || serverPort < 5000);
 
 		// association de l'adresse et du port a la connexion
 		listener.bind(new InetSocketAddress(serverIP, serverPort));
@@ -42,6 +49,7 @@ public class Server {
 			}
 		} finally {
 			listener.close();
+			scanner.close();
 		}
 	}
 
@@ -73,12 +81,8 @@ public class Server {
 				String commandName;
 				do {
 					String clientCommand = in.readUTF();
-					// System.out.println(clientCommand);
 					String command[] = clientCommand.split(" ");// le premier string est le nom de la commande
 					commandName = command[0];
-
-					// System.out.println("rien");
-					// System.out.println(commandName);
 
 					switch (commandName) {
 					case "ls":
@@ -125,6 +129,8 @@ public class Server {
 				System.out.println("Error handling client " + clientNumber + ": " + e);
 			} finally {
 				try {
+					out.close();
+					in.close();
 					socket.close();
 				} catch (IOException e) {
 					System.out.println("Couldn't close a socket");

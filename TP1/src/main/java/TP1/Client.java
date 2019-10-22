@@ -1,11 +1,15 @@
 package TP1;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Scanner;
 
@@ -13,6 +17,10 @@ public class Client {
 
 	private static Socket socket;
 	private static DataInputStream in;
+	private static DataOutputStream out;
+	static FileInputStream fis = null;
+	static BufferedInputStream bis = null;
+	static OutputStream os = null;
 
 	public static String[] decode(String caractere) {
 
@@ -49,29 +57,67 @@ public class Client {
 		}
 	}
 
-	public static void download() {
+	public static void download(String filename) {
 		try {
-			int fileSize;
-			fileSize = in.readInt();
-			System.out.print("size: " + fileSize);
-			byte[] mybytearray = new byte[209982];
-			InputStream is = socket.getInputStream();
-			FileOutputStream fos = new FileOutputStream("test.jpg");
+			int response = in.readInt();
+			if (response == 0) {
+				System.out.println("the file doesn't exist ");
+				return;
+			}
+			long fileSize;
+			fileSize = in.readLong();
+			System.out.println("total file size is: " + fileSize);
+			byte[] buffer = new byte[8192];
+
+			FileOutputStream fos = new FileOutputStream(filename);
 			BufferedOutputStream bos = new BufferedOutputStream(fos);
+			int read = 0;
+			while ((read = in.read(buffer)) > 0) {
+				bos.write(buffer, 0, read);
+			}
 
-			int bytesRead = is.read(mybytearray, 0, mybytearray.length);
-			bos.write(mybytearray, 0, bytesRead);
-			System.out.print("finished downloading ");
+			System.out.println("finished downloading");
 
-			// bos.write(mybytearray, 0, current);
 			bos.flush();
-			// System.out.println("File " + "--test--" + " downloaded (" + current + " bytes
-			// read)");
 			bos.close();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
 
+	public static void upload(String fileName) {
+		System.out.println("filename: " + fileName);
+		try {
+			File myFile = new File(System.getProperty("user.dir") + "\\" + fileName);
+			if (myFile.exists()) {
+				System.out.println("file exists");
+				out.writeInt(1);
+				out.flush();
+			} else {
+				System.out.println("file doesn't exists");
+				out.writeInt(0);
+				out.flush();
+				return;
+			}
+
+			byte[] mybytearray = new byte[(int) myFile.length()];
+
+			// sending the file size
+			out.writeLong(myFile.length());
+			out.flush();
+
+			fis = new FileInputStream(myFile);
+			bis = new BufferedInputStream(fis);
+			bis.read(mybytearray, 0, mybytearray.length);
+			os = socket.getOutputStream();
+			System.out.println("Sending " + "test" + "(" + mybytearray.length + " bytes)");
+			os.write(mybytearray, 0, mybytearray.length);
+			os.flush();
+			System.out.println("Done.");
+		} catch (IOException e) {
+			System.out.println("erreur dans la creation du socket ou de l execution de la commande ");
+		}
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -103,24 +149,26 @@ public class Client {
 
 		// code bidon envoyer un fichier au serveur ;
 		String commandLine = "";
+		String command[];
 		// creation d un canal pour envoyer des messages au serveur ....
 		try {
-			while (true) {
+			Scanner scanner = new Scanner(System.in);
+			do {
 				System.out.print("Entrer une commande:  ");
-				Scanner scanner = new Scanner(System.in);
 				// try{
 
 				commandLine = scanner.nextLine();
-
-				DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+				out = new DataOutputStream(socket.getOutputStream());
 
 				out.writeUTF(commandLine);
-				String command[] = commandLine.split(" ");
-				// while(!in.readUTF().isEmpty()) {
+				command = commandLine.split(" ");
+
 				switch (command[0]) {
 				case "ls":
 					readStream();
+					break;
 				case "cd":
+					readStream();
 					break;
 
 				case "mkdir":
@@ -128,10 +176,11 @@ public class Client {
 					break;
 
 				case "upload":
+					upload(command[1]);
 					break;
 
 				case "download":
-					download();
+					download(command[1]);
 					break;
 
 				case "exit":
@@ -142,7 +191,7 @@ public class Client {
 					break;
 				}
 
-			}
+			} while (command[0].compareTo("exit") != 0);
 			// }
 			/*
 			 * catch(Exception e) {
@@ -153,10 +202,13 @@ public class Client {
 			 */
 
 			// }
+
+			scanner.close();
 		} catch (IOException e) {
 			System.out.println("erreur dans la creation du socket ou de l execution de la commande ");
 		} finally {
 			try {
+
 				socket.close();
 			} catch (IOException e) {
 				System.out.println("Couldn't close a socket");
