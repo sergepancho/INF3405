@@ -125,15 +125,15 @@ public class Client {
 		String serverAddress = "127.0.0.1";// "132.207.29.122";
 		int port = 5003;
 
-		// Scanner scanner = new Scanner(System.in);
+		Scanner scanner = new Scanner(System.in);
 		do {
 			System.out.print("Enter a valid IP address (ex: 123.123.12.1): ");
-			// serverAddress = scanner.next();
+			serverAddress = scanner.next();
 		} while (!checkAddress(serverAddress));
 
 		do {
 			System.out.print("Enter a valid port (entre 5000 et 5050):");
-			// port = scanner.nextInt();
+			port = scanner.nextInt();
 		} while (port > 5050 || port < 5000);
 
 		// Creation d'une nouvelle connexio avec le serveuer
@@ -152,10 +152,8 @@ public class Client {
 		String command[];
 		// creation d un canal pour envoyer des messages au serveur ....
 		try {
-			Scanner scanner = new Scanner(System.in);
 			do {
 				System.out.print("Entrer une commande:  ");
-				// try{
 
 				commandLine = scanner.nextLine();
 				out = new DataOutputStream(socket.getOutputStream());
@@ -208,15 +206,14 @@ public class Client {
 			System.out.println("erreur dans la creation du socket ou de l execution de la commande ");
 		} finally {
 			try {
-
+				in.close();
+				out.close();
 				socket.close();
 			} catch (IOException e) {
 				System.out.println("Couldn't close a socket");
 			}
 			System.out.println("fin de la communication");
 		}
-
-		//////
 
 		/*
 		 * //Fermeture de la connexion avec le serveur socket.close();
